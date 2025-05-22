@@ -1,0 +1,147 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 * * SUN"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        -20
+      ],
+      "id": "d360a2fd-59d6-43bc-b391-3239a8dd9603",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/feed/",
+        "options": {
+          "ignoreSSL": false
+        }
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        100,
+        -20
+      ],
+      "id": "1617ab5b-05a9-44cf-b190-82a0e2d7f5f0",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api-inference.huggingface.co/models/facebook/bart-large-cnn",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inputs\": \"{{ $node['RSS Read'].json['content'] }}\",\n  \"parameters\": {\n    \"max_length\": 100,\n    \"min_length\": 30\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        300,
+        -20
+      ],
+      "id": "6ed37fc9-da8c-40d1-b346-a31fdd158336",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "5hcZ3ClbWPflemjG",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "kirmadashukla@gmail.com",
+        "toEmail": "kirmadashukla@gmail.com",
+        "subject": "Weekly digest",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial, sans-serif; color: #333; }\n    .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n    .header { background-color: #007bff; color: white; padding: 15px; text-align: center; border-radius: 5px; }\n    .content { padding: 20px; background-color: #f9f9f9; border-radius: 5px; margin-top: 10px; }\n    .summary { font-size: 16px; line-height: 1.5; }\n    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #777; }\n    a { color: #007bff; text-decoration: none; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>Weekly Tech Digest</h1>\n    </div>\n    <div class=\"content\">\n      <h2>Top Tech Story</h2>\n      <p class=\"summary\">{{ $node['HTTP Request'].json['summary_text'] }}</p>\n    </div>\n    <div class=\"footer\">\n      <p>Powered by Shukla Tech Newsletter | <a href=\"#\">Subscribe</a></p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        540,
+        -20
+      ],
+      "id": "20fe1301-dede-4aa3-b825-c1d06f99d13f",
+      "name": "Send Email",
+      "webhookId": "e432f198-77b6-41fc-b8d7-ea67e0f9c55c",
+      "credentials": {
+        "smtp": {
+          "id": "aZbBMSRic8IuSyyt",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "78530ff8-6e1a-461d-8806-5d1f21bc71d8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5d644d1de0d8760e6032993443763dd4f0afa5353f1947d11b5cbbc397d0fc23"
+  },
+  "id": "Gt3qYIEGVdlHL29q",
+  "tags": []
+}
